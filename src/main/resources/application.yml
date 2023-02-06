@@ -1,0 +1,16 @@
+server:
+  port: 8080
+
+spring:
+  data:
+    mongodb:
+      authentication-database: admin
+#      username:
+#      password:
+      database: testDB
+      port: 27017
+      host: localhost
+
+  mvc:
+    path match:
+      matching-strategy: ant_path_matcher
