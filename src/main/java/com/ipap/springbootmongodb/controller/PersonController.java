@@ -2,6 +2,7 @@ package com.ipap.springbootmongodb.controller;
 
 import com.ipap.springbootmongodb.dto.PersonDto;
 import com.ipap.springbootmongodb.service.PersonService;
+import org.bson.Document;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -58,6 +59,18 @@ public class PersonController {
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(personService.search(name, minAge, maxAge, city, pageable));
+    }
+
+    // Aggregation functions of mongoDB
+    @GetMapping("/oldest-person")
+    public List<Document> getOldestPerson() {
+        return personService.getOldestPersonByCity();
+    }
+
+    // Projection functions of mongoDB
+    @GetMapping("/population")
+    public  List<Document> getPopulationByCity() {
+        return personService.getPopulationByCity();
     }
 
     // Put

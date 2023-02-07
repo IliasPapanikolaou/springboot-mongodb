@@ -5,9 +5,12 @@ import com.ipap.springbootmongodb.entity.Person;
 import com.ipap.springbootmongodb.repository.PersonRepository;
 import com.ipap.springbootmongodb.util.Mapper;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.Document;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.support.PageableExecutionUtils;
@@ -98,5 +101,40 @@ public class PersonServiceImpl implements PersonService {
                 pageable,
                 () -> mongoTemplate.count(query.skip(0).limit(0), Person.class))
                 .map(Mapper::toDto);
+    }
+
+    @Override
+    public List<Document> getOldestPersonByCity() {
+        // Unwind addresses so they are directly accessible
+        UnwindOperation unwindOperation = Aggregation.unwind("addresses");
+        // Sort by age desc
+        SortOperation sortOperation = Aggregation.sort(Sort.Direction.DESC, "age");
+        // Group by city, the pick the first one as olderPerson
+        GroupOperation groupOperation =
+                Aggregation.group("addresses.city").first(Aggregation.ROOT).as("oldestPerson");
+        // Aggregation
+        Aggregation aggregation = Aggregation.newAggregation(unwindOperation, sortOperation, groupOperation);
+        // Return result
+        return mongoTemplate.aggregate(aggregation, Person.class, Document.class).getMappedResults();
+    }
+
+    @Override
+    public List<Document> getPopulationByCity() {
+        // Unwind addresses so they are directly accessible
+        UnwindOperation unwindOperation = Aggregation.unwind("addresses");
+        // Group by city
+        GroupOperation groupOperation = Aggregation.group("addresses.city").count().as("populationCount");
+        // Sort by population count desc
+        SortOperation sortOperation = Aggregation.sort(Sort.Direction.DESC, "populationCount");
+        // Projection
+        ProjectionOperation projectionOperation = Aggregation.project()
+                .andExpression("_id").as("city")
+                .andExpression("populationCount").as("count")
+                .andExclude("_id");
+        // Aggregation
+        Aggregation aggregation =
+                Aggregation.newAggregation(unwindOperation, groupOperation, sortOperation, projectionOperation);
+        // Return result
+        return mongoTemplate.aggregate(aggregation, Person.class, Document.class).getMappedResults();
     }
 }

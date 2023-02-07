@@ -1,6 +1,7 @@
 package com.ipap.springbootmongodb.service;
 
 import com.ipap.springbootmongodb.dto.PersonDto;
+import org.bson.Document;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -22,4 +23,8 @@ public interface PersonService {
     List<PersonDto> getPersonsByAge(Integer min, Integer max);
 
     Page<PersonDto> search(String name, Integer minAge, Integer maxAge, String city, Pageable pageable);
+
+    List<Document> getOldestPersonByCity();
+
+    List<Document> getPopulationByCity();
 }
