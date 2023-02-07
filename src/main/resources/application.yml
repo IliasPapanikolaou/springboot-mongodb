@@ -10,6 +10,8 @@ spring:
       database: testDB
       port: 27017
       host: localhost
+      # auto index creation for @Indexed annotation
+      auto-index-creation: true
 
   mvc:
     path match:

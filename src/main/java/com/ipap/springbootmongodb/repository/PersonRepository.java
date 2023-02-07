@@ -11,6 +11,8 @@ public interface PersonRepository extends MongoRepository<Person, String> {
 
     Optional<Person> findByPersonId(String personId);
 
+    Optional<Person> findPersonByEmail(String email);
+
     List<Person> findByFirstNameStartsWith(String name);
 
     // field addresses is excluded from the result
